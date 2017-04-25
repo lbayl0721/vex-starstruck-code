@@ -1,0 +1,51 @@
+task MotorSlewRateTask()
+{
+    int motorIndex;
+    int motorTmp;
+
+    // Initialize stuff
+    for(motorIndex=0;motorIndex<MOTOR_NUM;motorIndex++)
+        {
+        motorReq[motorIndex] = 0;
+        motorSlew[motorIndex] = MOTOR_DEFAULT_SLEW_RATE;
+        }
+
+    // run task until stopped
+    while( true )
+        {
+        // run loop for every motor
+        for( motorIndex=0; motorIndex<MOTOR_NUM; motorIndex++)
+            {
+            // So we don't keep accessing the internal storage
+            motorTmp = motor[ motorIndex ];
+
+            // Do we need to change the motor value ?
+            if( motorTmp != motorReq[motorIndex] )
+                {
+                // increasing motor value
+                if( motorReq[motorIndex] > motorTmp )
+                    {
+                    motorTmp += motorSlew[motorIndex];
+                    // limit
+                    if( motorTmp > motorReq[motorIndex] )
+                        motorTmp = motorReq[motorIndex];
+                    }
+
+                // decreasing motor value
+                if( motorReq[motorIndex] < motorTmp )
+                    {
+                    motorTmp -= motorSlew[motorIndex];
+                    // limit
+                    if( motorTmp < motorReq[motorIndex] )
+                        motorTmp = motorReq[motorIndex];
+                    }
+
+                // finally set motor
+                motor[motorIndex] = motorTmp;
+                }
+            }
+
+        // Wait approx the speed of motor update over the spi bus
+        wait1Msec( MOTOR_TASK_DELAY );
+        }
+}
